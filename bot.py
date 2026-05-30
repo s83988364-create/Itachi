@@ -9,6 +9,44 @@ from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, MessageHandler, ContextTypes, filters, CallbackQueryHandler
 from aiohttp import web
 import os
+# Add this with other imports
+import imghdr
+import logging
+
+# Add this function after imports
+if not hasattr(imghdr, 'what'):
+    def what(file, h=None):
+        import struct
+        f = None
+        try:
+            if h is None:
+                if isinstance(file, str):
+                    f = open(file, 'rb')
+                    data = f.read(32)
+                else:
+                    data = file.read(32)
+            else:
+                data = h
+            # JPEG
+            if data[6:10] in (b'JFIF', b'Exif'):
+                return 'jpeg'
+            # PNG
+            if data.startswith(b'\211PNG\r\n\032\n'):
+                return 'png'
+            # GIF
+            if data.startswith(b'GIF87a') or data.startswith(b'GIF89a'):
+                return 'gif'
+            # BMP
+            if data.startswith(b'BM'):
+                return 'bmp'
+            # WebP
+            if data.startswith(b'RIFF') and data[8:12] == b'WEBP':
+                return 'webp'
+        finally:
+            if f:
+                f.close()
+        return None
+    imghdr.what = what
 
 # ==================== CONFIG ====================
 BOT_TOKEN = "8899146901:AAHenfTssLA6krnnaxFunQ3-jzIhLoeb9N4"
